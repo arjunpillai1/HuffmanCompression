@@ -1,9 +1,12 @@
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class HuffmanTest {
 
     public static void main(String[] args) throws IOException {
-        HuffmanTree tree =new HuffmanTree();
         BufferedInputStream bufferedIn=null;
         BufferedOutputStream bufferedOut=null;
         FileInputStream in = null;
@@ -15,16 +18,18 @@ public class HuffmanTest {
             bufferedIn= new BufferedInputStream(in);
             out = new FileOutputStream("goodbye.txt");
             bufferedOut = new BufferedOutputStream(out);
-            int c;
+
+            HuffmanTree tree = new HuffmanTree(bufferedIn);
+            bufferedIn.reset(); // go back to beginning of the file
+            tree.generateCode(bufferedIn);
+            /*
+            line 1 based on the input stream
+            line 2 tree.generateBracketTree("",tree.getRoot())
+            line 3 tree.excessBitCount()
+            line 4 tree.getCode();
+             */
 
 
-
-            while ((c = bufferedIn.read()) != -1) {
-                tree.incrementCharacterFrequencies(c);
-                System.out.print(c);
-                System.out.println((char)c);
-                out.write(c);
-            }
         } finally {
             if (in != null) {
                 in.close();
@@ -35,9 +40,9 @@ public class HuffmanTest {
                 bufferedOut.close();
             }
         }
-
-        //method to get remain
     }
+
+
 
 
 
@@ -46,20 +51,30 @@ public class HuffmanTest {
 
         private int[] possibleCharacter = new int[256];
         private int[] characterFrequencies = new int[256];
+        private String[] codeTable = new String[256];
+        private String code;
 
-        HuffmanTree(){
-            root= null;
+
+        HuffmanTree(BufferedInputStream input) throws IOException{
+            root=null;
             for (int i=0;i<256;i++){
                 possibleCharacter[i]=i;
             }
+
+            int c;
+            while ((c = input.read()) != -1) {
+                incrementCharacterFrequencies(c);
+            }
+            assembleTree();
+
+
         }
         /*
         build tree method
         dequeue the 2 lowest frequency nodes from priority queue and create a new node that has them as children
         add the new Node back into queue
         */
-        // after a list of
-        public void buildTree(){
+        public void assembleTree(){
             PriorityQueue priorityQ= new PriorityQueue();
 
             //initialise priority queue
@@ -72,11 +87,51 @@ public class HuffmanTest {
             while (priorityQ.getSize()>1){
                 HuffmanNode leftChild =priorityQ.dequeue(); // take off the two lowest frequency nodes
                 HuffmanNode rightChild=priorityQ.dequeue();
-                // creates the parent which have the huffman nodes as its children
                 HuffmanNode parent = new HuffmanNode(-1,leftChild.getFrequency()+rightChild.getFrequency(),leftChild,rightChild);
+                // creates the parent which has the lowest frequency nodes as children
+                priorityQ.enqueue(parent); //adds parent back into queue
             }
-            root= priorityQ.dequeue();
 
+            root= priorityQ.dequeue(); // set root equal to highest node
+            generateCodeTable(codeTable, root,"");//
+
+        }
+
+
+        /*
+        recursive call traverse through tree to create the table of values
+        if the path to a leaf takes it left then it adds 0 to the compression key for that character
+        if the path takes it right then it adds a 1
+         */
+        public void generateCodeTable(String[] table, HuffmanNode node, String code){
+            if (node.isLeaf()){
+                table[node.getValue()] = code; // assigns the final code to the corresponding index as the character its for
+            } else{
+                generateCodeTable(table,node.getLeft(),code+"0");
+                generateCodeTable(table,node.getRight(),code+"1");
+            }
+        }
+
+        public void generateCode(BufferedInputStream input) throws IOException{
+            int c;
+            code="";
+            while ((c = input.read()) != -1) {
+                code=code+codeTable[c];
+            }
+        }
+
+        public int excessBitCount(){
+            return (code.length()%8);
+        }
+
+        public String generateBracketTree(String bracketTree, HuffmanNode node){
+            if (!node.isLeaf()){
+                bracketTree= "("+generateBracketTree(bracketTree,node.getLeft())+" "+ generateBracketTree(bracketTree,node.getRight())+")";
+            } else {
+                return node.getValue()+"";
+            }
+
+            return bracketTree;
         }
 
         public int getCharacterFrequency(int index) {
@@ -91,8 +146,12 @@ public class HuffmanTest {
             return possibleCharacter[index];
         }
 
-        public void setPossibleCharacter(int[] possibleCharacter) {
-            this.possibleCharacter = possibleCharacter;
+        public String getCode() {
+            return code;
+        }
+
+        public HuffmanNode getRoot() {
+            return root;
         }
     }
 
@@ -109,6 +168,14 @@ public class HuffmanTest {
             right=rightChild;
         }
 
+        public int getValue() {
+            return value;
+        }
+
+        public int getFrequency() {
+            return frequency;
+        }
+
         public HuffmanNode getLeft() {
             return left;
         }
@@ -117,9 +184,6 @@ public class HuffmanTest {
             return right;
         }
 
-        public int getFrequency() {
-            return frequency;
-        }
 
         public void setLeft(HuffmanNode left) {
             this.left = left;
@@ -134,7 +198,7 @@ public class HuffmanTest {
         }
 
         public boolean isLeaf(){
-            return (left==null && right==null);// true of both are null
+            return ((left==null) && (right==null)); // true if it has no children
         }
     }
 
@@ -150,19 +214,21 @@ public class HuffmanTest {
         }
 
         public void enqueue(HuffmanNode node){
+            size++;
             PriorityNode newNode = new PriorityNode(node);
             if (head==null){ //when adding to an empty queue
                 head=newNode;
                 tail=head;
             }else if (head==tail){ // if there's only one item in the queue (it's both the end and beginning)
-                if (newNode.compareTo(head) == -1){// if the new node has lower priority than the head
+                if (newNode.compareTo(head) == 1){// if the new node has lower frequency than the head
                     PriorityNode tempNode = head;
                     newNode.setNext(tempNode);
+                    newNode.setPrevious(null);
                     tempNode.setNext(null);
                     tempNode.setPrevious(newNode);
                     tail=tempNode;
                     head=newNode;
-                } else {
+                } else { // if the new node has a higher frequency than the head
                     newNode.setPrevious(head);
                     newNode.setNext(null);
                     head.setPrevious(null);
@@ -171,19 +237,20 @@ public class HuffmanTest {
                 }
             }else {// this is the most common case, 2+ items in queue
                 PriorityNode tempNode =tail; // the moving node starting at the tail;
-                if (newNode.compareTo(tempNode) != -1){
+                if (newNode.compareTo(tempNode) != 1){
                     tempNode.setNext(newNode);
                     newNode.setPrevious(tempNode);
                     tail=newNode;
                 }
-                while (newNode.compareTo(tempNode)==-1){
+                while (newNode.compareTo(tempNode)== 1){
                     tempNode=tempNode.getPrevious();// this traverses through the queue
 
-                    if (newNode.compareTo(tempNode)!=-1){
+                    if (newNode.compareTo(tempNode)!= 1){
                         newNode.setNext(tempNode.getNext());
                         newNode.setPrevious((tempNode));
-                        tempNode.setNext(newNode);
                         tempNode.getNext().setPrevious(newNode);
+                        tempNode.setNext(newNode);
+
                     }
                 }
             }
@@ -192,14 +259,15 @@ public class HuffmanTest {
             if (head==null) { // when there are no items
                 return null;
             }else {
+                size--;
                 HuffmanNode temp =head.getItem(); // store the item before erasing the node
-                if (head.getNext()==null){
+                if (head.getNext()==null){ // if there's only one item;
                     head=null;
                     return temp;
                 } else {
                     head=head.getNext();
                     if (head.getNext()==null){ //
-                        tail=null;
+                        tail=head;
                     }
                     return temp;
                 }
@@ -258,6 +326,7 @@ public class HuffmanTest {
             }
         }
     }
+
 
 
 }
