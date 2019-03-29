@@ -77,7 +77,15 @@ public class HuffmanTree{
     }
 
     public int excessBitCount(){
-        return (code.length()%8);
+        int count =8-(code.length()%8);
+        if (count==8){
+          count=0;
+        }else{
+          for (int i=0;i<count;i++){
+            code=code+"0"; 
+          }
+        }
+        return count;
     }
 
     public String generateBracketTree(String bracketTree, HuffmanNode node){
