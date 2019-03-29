@@ -1,23 +1,26 @@
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+
 public class HuffmanTest {
 
     public static void main(String[] args) throws IOException {
         HuffmanTree tree =new HuffmanTree();
+        BufferedInputStream bufferedIn=null;
+        BufferedOutputStream bufferedOut=null;
         FileInputStream in = null;
         FileOutputStream out = null;
 
 
         try {
             in = new FileInputStream("hello.txt");
+            bufferedIn= new BufferedInputStream(in);
             out = new FileOutputStream("goodbye.txt");
+            bufferedOut = new BufferedOutputStream(out);
             int c;
 
 
 
-            while ((c = in.read()) != -1) {
-                tree.incrementCharacterFrequencies(c)
+            while ((c = bufferedIn.read()) != -1) {
+                tree.incrementCharacterFrequencies(c);
                 System.out.print(c);
                 System.out.println((char)c);
                 out.write(c);
@@ -25,12 +28,17 @@ public class HuffmanTest {
         } finally {
             if (in != null) {
                 in.close();
+                bufferedIn.close();
             }
             if (out != null) {
                 out.close();
+                bufferedOut.close();
             }
         }
+
+        //method to get remain
     }
+
 
 
     public class HuffmanTree{
@@ -40,6 +48,7 @@ public class HuffmanTest {
         private int[] characterFrequencies = new int[256];
 
         HuffmanTree(){
+            root= null;
             for (int i=0;i<256;i++){
                 possibleCharacter[i]=i;
             }
@@ -61,10 +70,12 @@ public class HuffmanTest {
             }
 
             while (priorityQ.getSize()>1){
-                HuffmanNode leftChild =priorityQ.dequeue();
+                HuffmanNode leftChild =priorityQ.dequeue(); // take off the two lowest frequency nodes
                 HuffmanNode rightChild=priorityQ.dequeue();
-                HuffmanNode parent = new HuffmanNode(-1,leftChild.getFrequency()+rightChild.getFrequency(),leftChild,rightChild)
+                // creates the parent which have the huffman nodes as its children
+                HuffmanNode parent = new HuffmanNode(-1,leftChild.getFrequency()+rightChild.getFrequency(),leftChild,rightChild);
             }
+            root= priorityQ.dequeue();
 
         }
 
@@ -86,7 +97,7 @@ public class HuffmanTest {
     }
 
     public class HuffmanNode implements Comparable<HuffmanNode>{
-        int value
+        int value;
         int frequency;
         HuffmanNode left=null;
         HuffmanNode right=null;
@@ -123,11 +134,7 @@ public class HuffmanTest {
         }
 
         public boolean isLeaf(){
-            if (left==null && right==null){
-                return true;
-            }else {
-                return false;
-            }
+            return (left==null && right==null);// true of both are null
         }
     }
 
