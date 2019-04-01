@@ -58,15 +58,14 @@ public class HuffmanTree{
 
     /**
      * generateCodeTable
+     * recursive call traverse through tree to create the table of values
+     *  if the path to a leaf takes it left then it adds 0 to the compression key for that character
+     *  if the path takes it right then it adds a 1
      * @param table the table with the compression keys
      * @param node the movement through the tree
      * @param code the individual compression keys
      */
-    /*
-    recursive call traverse through tree to create the table of values
-    if the path to a leaf takes it left then it adds 0 to the compression key for that character
-    if the path takes it right then it adds a 1
-     */
+    
     public void generateCodeTable(String[] table, HuffmanNode node, String code){
         if (node.isLeaf()){
             table[node.getValue()] = code; // assigns the final code to the corresponding index as the character its for

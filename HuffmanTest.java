@@ -22,11 +22,13 @@ public class HuffmanTest {
     try {
       inputFileName="hello.txt";
       inputFileName=inputFileName.toUpperCase();
-      bufferedIn= new BufferedInputStream(new FileInputStream(inputFileName));
+            bufferedIn= new BufferedInputStream(new FileInputStream(inputFileName));
       printer = new PrintStream(new BufferedOutputStream(new FileOutputStream(inputFileName+"2"+"")));
 
       
+      System.out.println("29");
       HuffmanTree tree = new HuffmanTree(bufferedIn);
+      System.out.println("31");
       bufferedIn.close();
       bufferedIn= new BufferedInputStream(new FileInputStream("hello.txt"));// go back to beginning of the file
       tree.generateCode(bufferedIn);
