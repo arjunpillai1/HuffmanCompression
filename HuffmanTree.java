@@ -1,6 +1,5 @@
 import java.io.BufferedInputStream;
 import java.io.IOException;
-//import HuffmanNode;
 
 public class HuffmanTree{
     HuffmanNode root;
@@ -25,13 +24,16 @@ public class HuffmanTree{
 
 
     }
-    /*
-    build tree method
-    dequeue the 2 lowest frequency nodes from priority queue and create a new node that has them as children
-    add the new Node back into queue
-    */
+
+    /**
+     * assembleTree
+     *  build tree method
+     *  dequeue the 2 lowest frequency nodes from priority queue and create a new node that has them as children
+     *  add the new Node back into queue
+     */
+
     public void assembleTree(){
-        PriorityQueue priorityQ= new PriorityQueue();
+        PriorityQueueV2 priorityQ= new PriorityQueueV2();
 
         //initialise priority queue
         for (int i=0;i<256;i++){
@@ -54,6 +56,12 @@ public class HuffmanTree{
     }
 
 
+    /**
+     * generateCodeTable
+     * @param table the table with the compression keys
+     * @param node the movement through the tree
+     * @param code the individual compression keys
+     */
     /*
     recursive call traverse through tree to create the table of values
     if the path to a leaf takes it left then it adds 0 to the compression key for that character
@@ -68,6 +76,11 @@ public class HuffmanTree{
         }
     }
 
+    /**
+     * generateCode
+     * @param input the file to create the code from
+     * @throws IOException
+     */
     public void generateCode(BufferedInputStream input) throws IOException{
         int c;
         code="";
@@ -76,18 +89,29 @@ public class HuffmanTree{
         }
     }
 
+    /**
+     * excessBitCount
+     * @return int number of extra bits at the end of the code
+     */
     public int excessBitCount(){
         int count =8-(code.length()%8);
         if (count==8){
           count=0;
         }else{
           for (int i=0;i<count;i++){
+              System.out.println("excess");
             code=code+"0"; 
           }
         }
         return count;
     }
 
+    /**
+     * generateBracketTree
+     * @param bracketTree String to concatenate
+     * @param node node to translate
+     * @return String tree in string form
+     */
     public String generateBracketTree(String bracketTree, HuffmanNode node){
         if (!node.isLeaf()){
             bracketTree= "("+generateBracketTree(bracketTree,node.getLeft())+" "+ generateBracketTree(bracketTree,node.getRight())+")";
@@ -98,22 +122,44 @@ public class HuffmanTree{
         return bracketTree;
     }
 
+    /**
+     * getCharacterFrequency
+     * @param index the index of the character to examine
+     * @return int the frequency of the specific character
+     */
     public int getCharacterFrequency(int index) {
         return characterFrequencies[index];
     }
 
+    /**
+     * incrementCharacterFrequencies
+     * @param index index of the character whose frequency to increment
+     */
     public void incrementCharacterFrequencies(int index) {
         characterFrequencies[index]++;
     }
 
+    /**
+     * getCharacter
+     * @param index index of the character to get
+     * @return int the decimal value of the character
+     */
     public int getCharacter(int index) {
         return possibleCharacter[index];
     }
 
+    /**
+     * getCode
+     * @return String the code
+     */
     public String getCode() {
         return code;
     }
 
+    /**
+     * getRoot
+     * @return HuffmanNode the highest node of the tree
+     */
     public HuffmanNode getRoot() {
         return root;
     }
