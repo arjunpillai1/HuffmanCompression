@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 public class HuffmanTest {
-  
+
   public static void main(String[] args) throws IOException {
     long startTime = System.nanoTime();
     BufferedInputStream bufferedIn=null;
@@ -15,26 +15,26 @@ public class HuffmanTest {
 
     String inputFileName;
     int excessBits;
-    String codeString;
+    String initCodeString;
+    String convertedCode;
     String bracketTree;
 
        
     try {
       inputFileName="hello.txt";
       inputFileName=inputFileName.toUpperCase();
-            bufferedIn= new BufferedInputStream(new FileInputStream(inputFileName));
-      printer = new PrintStream(new BufferedOutputStream(new FileOutputStream(inputFileName+"2"+"")));
+      bufferedIn= new BufferedInputStream(new FileInputStream(inputFileName));
+      printer = new PrintStream(new BufferedOutputStream(new FileOutputStream("goodbye.txt")));
 
-      
-      System.out.println("29");
       HuffmanTree tree = new HuffmanTree(bufferedIn);
-      System.out.println("31");
       bufferedIn.close();
       bufferedIn= new BufferedInputStream(new FileInputStream("hello.txt"));// go back to beginning of the file
       tree.generateCode(bufferedIn);
       excessBits=tree.excessBitCount();
-      codeString=tree.getCode();
       bracketTree=tree.generateBracketTree("",tree.getRoot());
+      initCodeString=tree.getCode();
+      convertedCode=convertCode(initCodeString);
+
 
       /*
        line 1 based on the input stream
@@ -45,12 +45,12 @@ public class HuffmanTest {
       System.out.println(inputFileName.toUpperCase());
       System.out.println(bracketTree);
       System.out.println(excessBits);
-      //System.out.println(codeString);
+      //System.out.println(initCodeString);
 
       printer.println(inputFileName.toUpperCase()); //line 1
       printer.println(bracketTree); //line 2
       printer.println(excessBits); //line 3
-      printer.println(codeString);//line 4
+      printer.println(convertedCode);//line 4
       
     } finally {
       if (bufferedIn != null) {
@@ -60,7 +60,15 @@ public class HuffmanTest {
         printer.close();
       }
     }
-    System.out.println((System.nanoTime()-startTime)/1000000);
+    System.out.println("runtime: "+(System.nanoTime()-startTime)/1000000);
+  }
+  public static String convertCode(String initialCode){
+    String convertedCode="";
+    for (int i=0;i<(initialCode.length()/8);i++){
+        int tempByte = Integer.parseInt((initialCode.substring(8*i,8*i+8)),2);
+        convertedCode=convertedCode+((char)tempByte);
+    }
+    return convertedCode;
   }
 
   

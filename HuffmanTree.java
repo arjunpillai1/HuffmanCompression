@@ -98,8 +98,7 @@ public class HuffmanTree{
           count=0;
         }else{
           for (int i=0;i<count;i++){
-              System.out.println("excess");
-            code=code+"0"; 
+              code=code+"0";
           }
         }
         return count;
